@@ -11,6 +11,7 @@
 ### Open your local copy with Microsoft Excel, or newer versions of Open Office Calc.
 #### Note: you can get Open Office free from the web
 
+### On Twitter: @FlyingFish365 for questions, comments, suggestions, discussion.
 
-#### Very much a new project, so expect additions and clarifications!
-#### Source code in Python will be added when it has been cleanedup some.
+#### Very much a new project, so expect additions, enhancements and clarifications!
+#### Source code in Python will be added when it has been cleaned up some.
