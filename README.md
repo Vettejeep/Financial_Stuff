@@ -7,7 +7,7 @@
 #### Observing that Gold has moved significantly higher in 2020.
 
 ### See the disclaimers in the "XLSX" file - very important - nothing here is investment advice.
-### Click in the "xlsx" file, it won't preview in Github, but to the right there will be a download button.
+### Click on the "xlsx" file, it won't preview in Github, but to the right there will be a download button.
 ### Open your local copy with Microsoft Excel, or newer versions of Open Office Calc.
 #### Note: you can get Open Office free from the web
 
