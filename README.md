@@ -20,4 +20,6 @@
 All files herein © 2020 Kevin Maher. 
 Permission to use or copy any and all files or portions thereof granted as long as my Twitter handle 
 is displayed or a citation in any normal academic format is provided which includes a link to 
-https://github.com/Vettejeep/Financial_Stuff
+https://github.com/Vettejeep/Financial_Stuff 
+
+For use of code also comply with the GPL-3.0 License. 
