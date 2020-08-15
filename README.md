@@ -15,3 +15,4 @@
 
 #### Very much a new project, so expect additions, enhancements and clarifications!
 #### Source code in Python will be added when it has been cleaned up some.
+#### Raw data is scrapped from Yahoo Finance.
