@@ -6,7 +6,7 @@
 #### Note how Gold outperformed the S&P 500 from about 2001 to 2011, then the S&P 500 had been better until recently.
 #### Observing that Gold has moved significantly higher in 2020.
 
-### See the disclaimers in the "XLSX" file - very important - nothing here is investment advice.
+### See the disclaimers in the "xlsx" file - very important - nothing here is investment advice.
 ### Click on the "xlsx" file, it won't preview in Github, but to the right there will be a download button.
 ### Open your local copy with Microsoft Excel, or newer versions of Open Office Calc.
 #### Note: you can get Open Office free from the web
@@ -22,4 +22,4 @@ Permission to use or copy any and all files or portions thereof granted as long 
 is displayed or a citation in any normal academic format is provided which includes a link to 
 https://github.com/Vettejeep/Financial_Stuff 
 
-For use of code also comply with the GPL-3.0 License. 
+For use of code also comply with the GPL-3.0 License. Under GPL-3.0 this is open source code and free to use or modify. 
