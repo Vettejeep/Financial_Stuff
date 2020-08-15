@@ -1,6 +1,6 @@
 # Financial Market Perspectives
 ## Ratio charts of key Exchange Traded Funds and other assets. 
-## Primarily against the S&P 500 and Gold. 
+## Primarily against the S&P 500 and Gold - dozens of comparisons. 
 ### Ratio charts give long term perspective on which assets are outperforming the base asset class.
 ![Gold_vs_SP](img/gld_vs_spy.png)  
 #### Note how Gold outperformed the S&P 500 from about 2001 to 2011, then the S&P 500 had been better until recently.
