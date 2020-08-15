@@ -16,3 +16,8 @@
 #### Very much a new project, so expect additions, enhancements and clarifications!
 #### Source code in Python will be added when it has been cleaned up some.
 #### Raw data is scrapped from Yahoo Finance.
+
+All files herein © 2020 Kevin Maher. 
+Permission to use or copy any and all files or portions thereof granted as long as my Twitter handle 
+is displayed or a citation in any normal academic format is provided which includes a link to 
+https://github.com/Vettejeep/Financial_Stuff
