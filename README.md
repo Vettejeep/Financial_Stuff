@@ -3,7 +3,7 @@
 ## Primarily against the S&P 500 and Gold - dozens of comparisons. 
 ### Ratio charts give long term perspective on which assets are outperforming the base asset class.
 ![Gold_vs_SP500 RSI](img/gld_vs_spy.png)  
-#### Note how Gold outperformed the S&P 500 from about 2001 to 2011, then the S&P 500 had been better until recently. We can observe that Gold has moved significantly higher in 2020 relative to the S&P 500.
+#### Note how Gold outperformed the S&P 500 from about 2001 to 2011, then the S&P 500 had been better until recently. We can observe that Gold has moved significantly higher in 2020 relative to the S&P 500. RSI has been recently added to the charts, as well as 1 year plots.
 
 ### See the disclaimers in the "xlsx" file - very important - nothing here is investment advice.
 ### Click on the "xlsx" file, it won't preview in Github, but to the right there will be a download button.
