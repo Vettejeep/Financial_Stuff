@@ -12,7 +12,7 @@
 ### On Twitter: @FlyingFish365 for questions, comments, suggestions, discussion.
 
 #### Very much a new project, so expect additions, enhancements and clarifications!
-#### Source code in Python will be added when it has been cleaned up some.
+#### Source code is in Python, for a recent Anaconda 3 distribution.
 #### Raw data is scrapped from Yahoo Finance.
 
 All files herein © 2020 Kevin Maher. 
