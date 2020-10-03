@@ -12,6 +12,7 @@
 ### On Twitter: @FlyingFish365 for questions, comments, suggestions, discussion.
 
 #### Very much a new project, so expect additions, enhancements and clarifications!
+#### Still working out bugs when Yahoo Finance does not respond properly, but seems to get a completed analysis most of the time.
 #### Source code is in Python, for a recent Anaconda 3 distribution.
 #### Raw data is scrapped from Yahoo Finance.
 
