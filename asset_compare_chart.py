@@ -5,6 +5,20 @@
 
 # TODO: new percent change charts not fully validated, but the code appears correct
 
+# play:
+# qqq, but rsi divergence
+# iyt maybe
+# pave
+# icln
+# pbw
+# smh
+# botz
+# robo
+# qqew
+# iyw
+# icvt
+# all gold and silver
+
 import io
 import os
 import csv
@@ -17,11 +31,11 @@ from bs4 import BeautifulSoup
 import matplotlib.pyplot as plt
 from urllib.request import urlopen  # Request,
 pd.options.mode.chained_assignment = None  # default='warn'
-pd.set_option('display.max_columns', 8)
+pd.set_option('display.max_columns', 32)
 from pandas.plotting import register_matplotlib_converters
 register_matplotlib_converters()
 
-__VERSION__ = '2.0.0'
+__VERSION__ = '2.1.0'
 
 UPDATE_FILES = False  ### Set True to create the needed ticker files
 MAKE_PLOT = True
@@ -44,7 +58,7 @@ ONE_MN_AVG = int(20)
 SHORT_AVG = int(TERM_SHORT*4.33*5)
 LONG_AVG = int(TERM_LONG*4.33*5)
 RSI_SHORT = 14
-RSI_LONG = 60
+RSI_LONG = 70
 PLT_WIDTH = 7
 PLT_HT = 4
 PLT_HT_MAJOR = 3
@@ -68,14 +82,19 @@ This is a historical study and not investment advice. Provided here are:
 Historical data charted for a list of asset ticker symbols from Yahoo finance, generally ETFs, futures and stocks.
 Plots of the price ratio over time between two securities as sets of moving averages to smooth out noise.
 The price ratio, plotted over time, tells you if the study security has performed better or worse than the base asset.
-Recently charts showing percentage change over time for various sets of assets have been added.
-Only assets traded on US exchanges are included, but funds may hold global assets in their portfolios.
+Charts showing percentage change over time for various sets of assets are also included.
+Only assets traded on US exchanges are included, but funds may hold global assets in their portfolios, or be
+primarily outside the US in their holdings.
 
 I believe that the charts here are valuable information for assisting in investment decisions.
 ETFs can be bought or sold like stocks and can represent market indexes that otherwise cannot be directly invested in.
 For ticker info just do an internet search for something like: <ticker> stock quote.
 The different sheets of this Excel file contain plots, mostly organized by the base asset ticker and time frame.
 Updated Excel output files are available at: {GITHUB}
+
+Open Office appears to be currently doing a better job of displaying the file. Not all table cell sizes are being
+set in all versions of Excel. This is true even though the Python library in-use is designed for Excel. Users can
+resize the cells while a solution is worked on.
 
 This file is the output of a program run started at {DATE_TIME_NOW}."""
 
@@ -102,7 +121,8 @@ recent trading day. This has been observed both in a browser and in this code. A
 associated with this problem have been fixed. Check the ticker 'csv' files for very small file sizes (1 kb),
 this is often a sign that there is a problem. Adequate error handling is still in progress, so this can cause
 a program crash. This code is very much a work in progress and not fully debugged or complete in handling all error 
-conditions, especially those coming from poor responses from Yahoo Finance."""
+conditions, especially those coming from poor responses from Yahoo Finance. Currently, Yahoo appears to be doing
+better and the bug has not been observed in the last few weeks, so it may have been fixed by Yahoo."""
 
 CHARTING = """
 Charting:
@@ -110,16 +130,15 @@ The charts here can be a portion of the useful information for assisting in inve
 You also need information about world events, politics, macro economics and specific economic factors related to the 
 asset classes and/or ETFs, futures or stocks that you might purchase or go short on, none of that is presented here.
 It is also valuable to have and understand technically oriented charts for assets you are considering investing
-in, these charts are not included in this study.
+in, these types of charts are not included in this study.
 
 Moving averages may not be fully valid for the earliest dates in the plots, especially for the longest term average.
 Plots may go back to 1996, but it depends on when the asset was created or Yahoo Finance data limitations
 
 All charts use "adjusted close" as reported by Yahoo Finance. Yahoo Finance says this accounts for dividends and 
-splits. Recently, code to detect splits and dividends for new data has been added, in this case the whole timeline
+splits. Code to detect splits and dividends for new data has been added, in this case the whole timeline
 for that specific security is re-created because the adjusted close has been recalculated for all dates by
-Yahoo Finance. This necessary feature is still being tested and validated. Thus, this is development code still in need 
-of proper validation."""
+Yahoo Finance."""
 
 INTERPRETATION = """
 Interpretation of Ratio Charts:
@@ -164,8 +183,7 @@ For added tickers it is best if they have existed for 5+ years so the longer ter
 Thanks for any kudos, or suggestions for the improvement of this study,
 Kevin"""
 
-CHANGES = """
-Recent Changes:
+PAST_CHANGES = """
 As of 2020-08-16
 1. Added RSI
 2. Added short term plots (1 year)
@@ -175,8 +193,14 @@ As of 2020-08-17
 2. Added more crypto ETFs
 As of 2020-08-22
 1. Add charts of percentage change over time for selected asset groups
+"""
+
+CHANGES = """
+Recent Changes:
 As of 2020-10-02
-1. Code checks for dividends and splits, rebuilding the ticker file if needed due to the change in adjusted close."""
+1. Code checks for dividends and splits, rebuilding the ticker file if needed due to the change in adjusted close.
+As of 2020-10-11
+1. Add Gold to Silver Ratio Chart - important for gold and silver investors"""
 
 PYTHON_NOTES = f"""
 Python: 
@@ -199,7 +223,8 @@ Set UPDATE_FILES = True to update or create the ticker files.
 Set your lists of tickers for acquisition and study, or use my settings.
 Run the script using Python...
 - not written for non-programmers to use, not user-friendly.
-- it is pretty simple code, but, you will need to read the Python..."""
+- it is pretty simple code, but, you will need to read the Python...
+- Non-programmers can usually find a reasonably up-to-date Excel file on the Github site"""
 
 LICENSE = f"""
 Licensing, the code is intended as open source code within the meaning of the license.
@@ -278,6 +303,7 @@ TKR_DICT = {
     'QQQ': 'Nasdaq 100',
     'RSP': 'Eq Wt S&P 500',
 
+    'IEF': 'US 7-10 Yr Treasurys',
     'GOVT': 'US Treasury ETF',
     'LQD': 'Corporate Bond ETF',
 
@@ -315,6 +341,7 @@ TKR_DICT = {
     'PAVE': 'Infrastructure',
     'ICLN': 'Clean Energy',
     'PBW': 'Clean Energy',
+    'SMH': 'Semi-Conductor',
     'BOTZ': 'AI',
     'ROBO': 'AI',
     'IDRV': 'Self-Driving',
@@ -733,6 +760,7 @@ def ref_portfolio(tkers, allocs):
         cur_ytd_ret = np.round(((np.prod(ytd_returns) - 1.0) * 100.0), 4)
         mo3_ytd_ret = np.round(((np.prod(returns[-4: -1]) - 1.0) * 100.0), 4)
 
+        print(f'Reference Portfolio for {tkers} in allocations {allocs}, all except current are to end of previous month.')
         print(f'1 yr return: {total_ret}%, ytd return: {ytd_ret}%, 3 month return: {mo3_ytd_ret}%, current ytd return: {cur_ytd_ret}%')
         print()
 
@@ -811,7 +839,6 @@ def build_ratio_data(study_ticker, base_ticker):
         except:
             msg = f'Error in build build_ratio_data, either {study_ticker} or {base_ticker} does not exist.\n'
             log_error(msg)
-            return df_out
 
         base_df = pd.read_csv(os.path.join(DATA_FOLDER, base_file))
         # print(base_df.head())
@@ -891,8 +918,19 @@ def build_ratio_data(study_ticker, base_ticker):
         msg += traceback.format_exc() + '\n'
         # print(msg)
         log_error(msg)
+    finally:
+        return df_out
 
-    return df_out
+
+def build_simple_ratio_data(study_ticker, base_ticker, min_date, max_date):  # 'one_over_short', 'short_over_long'
+    df = build_ratio_data(study_ticker, base_ticker)
+    print(df.shape)
+    df[f'one_over_short_{study_ticker}'] = (df['one_mo_ratio'] - df['short_ratio']).apply(lambda x: 1 if x >= 0 else 0)
+    df[f'short_over_long_{study_ticker}'] = (df['short_ratio'] - df['long_ratio']).apply(lambda x: 1 if x >= 0 else 0)
+
+    df = df[[f'one_over_short_{study_ticker}', f'short_over_long_{study_ticker}', 'dates']].loc[df['dates'] >= min_date]
+    df = df[[f'one_over_short_{study_ticker}', f'short_over_long_{study_ticker}']].loc[df['dates'] <= max_date]
+    return df.reset_index(drop=True)
 
 
 def make_pct_gain_chart(tkr_list, period_days=250):
@@ -955,7 +993,7 @@ def make_long_term_ratio_chart(df_out, study_ticker, study_desc, base_ticker, ba
     ax0.set_xlabel('Date', fontsize=8)
     ax0.set_title(f'{study_ticker} ({study_desc}) vs {base_ticker} ({base_desc}) Moving Avg Price Ratios', fontsize=8)
     ax0.legend(loc='upper left', fontsize=6)
-    ax0.margins(0.0)
+    ax0.margins(0.02)
     ax0.set_yscale(value='log')
     ax0.set_yticks(ticks=[])
     ax0.tick_params(axis='both', labelsize=6)
@@ -966,7 +1004,7 @@ def make_long_term_ratio_chart(df_out, study_ticker, study_desc, base_ticker, ba
     ax1.tick_params(axis='y', labelsize=6)
     ax1.set_xticks(ticks=[])
     ax1.set_title(f'RSI ({RSI_LONG} trading days)', fontsize=8)
-    ax1.margins(0.0)
+    ax1.margins(0.02)
 
     fig.tight_layout()
 
@@ -976,7 +1014,7 @@ def make_long_term_ratio_chart(df_out, study_ticker, study_desc, base_ticker, ba
     return fig
 
 
-def make_short_term_ratio_chart(df_out, study_ticker, study_desc, base_ticker, base_desc):
+def make_short_term_ratio_chart(df_out, study_ticker, study_desc, base_ticker, base_desc, alt_title=None):
     term_days = 250
     fig, (ax0, ax1) = plt.subplots(2, 1, gridspec_kw={'height_ratios': [PLT_HT_MAJOR, PLT_HT_MINOR]}, figsize=(PLT_WIDTH, PLT_HT))
 
@@ -985,10 +1023,14 @@ def make_short_term_ratio_chart(df_out, study_ticker, study_desc, base_ticker, b
     ax0.plot(df_out.dates.iloc[-term_days:], df_out['short_ratio'].iloc[-250:], color='tab:blue', label=f'{TERM_SHORT} {ABBR_FOR_AVG} MA')
     ax0.text(0.75, 0.03, 'Plot by @FlyingFish365 on Twitter', fontsize=6, transform=ax0.transAxes)
     ax0.set_xlabel('Date', fontsize=8)
-    ax0.set_title(f'{study_ticker} ({study_desc}) vs {base_ticker} ({base_desc}) Moving Avg Price Ratios (1 yr)', fontsize=8)
+
+    if alt_title is None:
+        ax0.set_title(f'{study_ticker} ({study_desc}) vs {base_ticker} ({base_desc}) Moving Avg Price Ratios (1 yr)', fontsize=8)
+    else:
+        ax0.set_title(alt_title, fontsize=8)
     ax0.legend(loc='upper left', fontsize=6)
-    ax0.margins(0.0)
-    ax0.margins(0.0)
+    ax0.margins(0.02)
+    ax0.margins(0.02)
     ax0.set_yscale(value='log')
     ax0.set_yticks(ticks=[])
     ax0.tick_params(axis='both', labelsize=6)
@@ -999,7 +1041,7 @@ def make_short_term_ratio_chart(df_out, study_ticker, study_desc, base_ticker, b
     ax1.tick_params(axis='y', labelsize=6)
     ax1.set_xticks(ticks=[])
     ax1.set_title(f'RSI ({RSI_SHORT} trading days)', fontsize=8)
-    ax1.margins(0.0)
+    ax1.margins(0.02)
 
     fig.tight_layout()
 
@@ -1021,6 +1063,7 @@ def make_basic_ratio_chart(df_out, study_ticker, study_desc, base_ticker, base_d
     plt.xlabel('Date', fontsize=8)
     plt.legend(loc='upper left', fontsize=6)
     plt.yscale(value='log')
+    plt.margins(x=0.02, y=0.02)
     fig.tight_layout()
 
     if SHOW_PLOTS:
@@ -1037,116 +1080,52 @@ def write_intro_sheet(workbook):
     for i, cell in enumerate(cells):
         worksheet.write(i, 0, cell)
 
+    return worksheet
+
 
 if __name__ == "__main__":
-    filename = f'ETF_Study_ver_{__VERSION__}_{DT.strftime("%Y_%m_%d_%H_%M")}.xlsx'
-    writer = pd.ExcelWriter(filename, engine='xlsxwriter')
-    workbook = writer.book
-
     if UPDATE_FILES:
         update_tickers(remove=DELETE_OBS_FILES)
 
-    if MAKE_PLOT:
-        if WRITE_XL:
-            write_intro_sheet(workbook)
+    if WRITE_XL:
+        filename = f'ETF_Study_ver_{__VERSION__}_{DT.strftime("%Y_%m_%d_%H_%M")}.xlsx'
+        writer = pd.ExcelWriter(filename, engine='xlsxwriter')
+        workbook = writer.book
 
-        # pages for the list of base tickers - long term
-        for base in BASE_TKRS:
-            base_desc = TKR_DICT[base]
-            worksheet = workbook.add_worksheet(f'Base Tkr {base} Long Term')
-            row = 0
-            col = 0
-
-            if os.path.exists(os.path.join(DATA_FOLDER, base + '.csv')):
-                df_test_b = pd.read_csv(os.path.join(DATA_FOLDER, base + '.csv'))
-                if base == 'GC=F' and df_test_b is not None and os.path.exists(os.path.join(DATA_FOLDER, 'GLD' + '.csv')):
-                    df_test_b2 = pd.read_csv(os.path.join(DATA_FOLDER, 'GLD' + '.csv'))
-                    if df_test_b2 is not None and df_test_b2.shape[0] > df_test_b.shape[0]:
-                        base = 'GLD'
-
-            elif os.path.exists(os.path.join(DATA_FOLDER, 'GLD' + '.csv')):
-                base = 'GLD'
-
-            else:
-                continue
-
-            for ticker, desc in TKR_DICT.items():
-                if base == ticker or (base == 'GC=F' and ticker in ['GLD', 'IAU', 'PHYS', 'OUNZ']) or (base == 'GLD' and ticker in ['GC=F', 'IAU', 'PHYS', 'OUNZ']):
-                    continue
-
-                print(f'Working {ticker} vs {base} Long Term')
-                df_ratio = build_ratio_data(ticker, base)
-
-                if df_ratio is not None:
-                    # return the chart - put in excel
-                    fig = make_long_term_ratio_chart(df_ratio, study_ticker=ticker, study_desc=desc, base_ticker=base, base_desc=base_desc)
-
-                    if WRITE_XL:
-                        img_data = io.BytesIO()
-                        fig.savefig(img_data, format="png")
-                        img_data.seek(0)
-                        worksheet.set_row(row=row, height=CELL_HT)
-                        worksheet.set_column(first_col=col, last_col=col, width=CELL_WIDTH)
-                        worksheet.insert_image(row, col, "", {'image_data': img_data})
-
-                    plt.close(fig)
-
-                    col += 1
-                    if col >= 3:
-                        col = 0
-                        row += 1
-
-        # page for selected ticker pairs
-        if WRITE_PAIR_PLOTS:
-            row = 0
-            col = 0
-            worksheet = workbook.add_worksheet(f'Ticker Pairs - Long Term')
-            for base, ticker in PAIR_TKRS.items():
-                base_desc = TKR_DICT[base]
-                tkr_desc = TKR_DICT[ticker]
-                print(f'Working {ticker} vs {base}')
-
-                df_ratio = build_ratio_data(ticker, base)
-
-                if df_ratio is not None:
-                    # return the chart - put in excel
-                    fig = make_long_term_ratio_chart(df_ratio, study_ticker=ticker, study_desc=tkr_desc, base_ticker=base,base_desc=base_desc)
-
-                    if WRITE_XL:
-                        img_data = io.BytesIO()
-                        fig.savefig(img_data, format="png")
-                        img_data.seek(0)
-                        worksheet.set_row(row=row, height=CELL_HT)
-                        worksheet.set_column(first_col=col, last_col=col, width=CELL_WIDTH)
-                        worksheet.insert_image(row, col, "", {'image_data': img_data})
-
-                    plt.close(fig)
-
-                    col += 1
-                    if col >= 2:
-                        col = 0
-                        row += 1
-
-        # pages for the list of base tickers - short term
-        for base in BASE_TKRS:
-            base_desc = TKR_DICT[base]
-
+        if MAKE_PLOT:
             if WRITE_XL:
-                worksheet = workbook.add_worksheet(f'Base Tkr {base} Short Term')
+                worksheet = write_intro_sheet(workbook)
 
+            # pages for the list of base tickers - long term
+            for base in BASE_TKRS:
+                base_desc = TKR_DICT[base]
+                worksheet = workbook.add_worksheet(f'Base Tkr {base} Long Term')
                 row = 0
                 col = 0
 
+                if os.path.exists(os.path.join(DATA_FOLDER, base + '.csv')):
+                    df_test_b = pd.read_csv(os.path.join(DATA_FOLDER, base + '.csv'))
+                    if base == 'GC=F' and df_test_b is not None and os.path.exists(os.path.join(DATA_FOLDER, 'GLD' + '.csv')):
+                        df_test_b2 = pd.read_csv(os.path.join(DATA_FOLDER, 'GLD' + '.csv'))
+                        if df_test_b2 is not None and df_test_b2.shape[0] > df_test_b.shape[0]:
+                            base = 'GLD'
+
+                elif os.path.exists(os.path.join(DATA_FOLDER, 'GLD' + '.csv')):
+                    base = 'GLD'
+
+                else:
+                    continue
+
                 for ticker, desc in TKR_DICT.items():
-                    if base == ticker or (base == 'GC=F' and ticker in ['GLD', 'IAU', 'PHYS', 'OUNZ']):
+                    if base == ticker or (base == 'GC=F' and ticker in ['GLD', 'IAU', 'PHYS', 'OUNZ']) or (base == 'GLD' and ticker in ['GC=F', 'IAU', 'PHYS', 'OUNZ']):
                         continue
 
-                    print(f'Working {ticker} vs {base} Short Term')
+                    print(f'Working {ticker} vs {base} Long Term')
                     df_ratio = build_ratio_data(ticker, base)
 
                     if df_ratio is not None:
                         # return the chart - put in excel
-                        fig = make_short_term_ratio_chart(df_ratio, study_ticker=ticker, study_desc=desc, base_ticker=base, base_desc=base_desc)
+                        fig = make_long_term_ratio_chart(df_ratio, study_ticker=ticker, study_desc=desc, base_ticker=base, base_desc=base_desc)
 
                         if WRITE_XL:
                             img_data = io.BytesIO()
@@ -1156,65 +1135,170 @@ if __name__ == "__main__":
                             worksheet.set_column(first_col=col, last_col=col, width=CELL_WIDTH)
                             worksheet.insert_image(row, col, "", {'image_data': img_data})
 
-                            plt.close(fig)
+                        plt.close(fig)
 
                         col += 1
                         if col >= 3:
                             col = 0
                             row += 1
 
-        ticker_grps = [
-            ['SPY', 'QQQ', 'GLD', 'GDX', 'GDXJ'],
-            ['GLD', 'GDX', 'GDXJ', 'SLV', 'SIL', 'SILJ'],
-            ['SPY', 'QQQ', 'RSP', 'IWM', 'IYT', 'XLF'],
-            ['SPY', 'QQQ', 'EFA', 'EEM'],
-            ['SPY', 'QQQ', 'LQD', 'GOVT'],
-        ]
+            # page for selected ticker pairs
+            if WRITE_PAIR_PLOTS:
+                row = 0
+                col = 0
+                worksheet = workbook.add_worksheet(f'Ticker Pairs - Long Term')
+                for base, ticker in PAIR_TKRS.items():
+                    base_desc = TKR_DICT[base]
+                    tkr_desc = TKR_DICT[ticker]
+                    print(f'Working {ticker} vs {base}')
 
-        df = pd.read_csv(os.path.join(DATA_FOLDER, 'SPY.csv'))
-        df.Date = df.Date.apply(lambda x: datetime.datetime.strptime(x, '%Y-%m-%d').date())
-        df0 = df.loc[df.Date >= datetime.date(year=2020, month=3, day=23), ]
-        df1 = df.loc[df.Date >= datetime.date(year=2019, month=12, day=31), ]
-        periods = [20, df0.shape[0], df1.shape[0], 250]
-        del df
-        row = 0
+                    df_ratio = build_ratio_data(ticker, base)
 
-        if WRITE_XL:
-            worksheet = workbook.add_worksheet(f'Pct Perf Charts')
+                    if df_ratio is not None:
+                        # return the chart - put in excel
+                        fig = make_long_term_ratio_chart(df_ratio, study_ticker=ticker, study_desc=tkr_desc, base_ticker=base,base_desc=base_desc)
 
-        for tkr_grp in ticker_grps:
-            col = 0
-            has_fig = False
-            for period in periods:
-                fig = make_pct_gain_chart(tkr_list=tkr_grp, period_days=period)
+                        if WRITE_XL:
+                            img_data = io.BytesIO()
+                            fig.savefig(img_data, format="png")
+                            img_data.seek(0)
+                            worksheet.set_row(row=row, height=CELL_HT)
+                            worksheet.set_column(first_col=col, last_col=col, width=CELL_WIDTH)
+                            worksheet.insert_image(row, col, "", {'image_data': img_data})
 
-                if fig:
-                    if WRITE_XL:
-                        has_fig = True
+                        plt.close(fig)
+
+                        col += 1
+                        if col >= 2:
+                            col = 0
+                            row += 1
+
+            # pages for the list of base tickers - short term
+            for base in BASE_TKRS:
+                base_desc = TKR_DICT[base]
+
+                if WRITE_XL:
+                    worksheet = workbook.add_worksheet(f'Base Tkr {base} Short Term')
+
+                    row = 0
+                    col = 0
+
+                    for ticker, desc in TKR_DICT.items():
+                        if base == ticker or (base == 'GC=F' and ticker in ['GLD', 'IAU', 'PHYS', 'OUNZ']):
+                            continue
+
+                        print(f'Working {ticker} vs {base} Short Term')
+                        df_ratio = build_ratio_data(ticker, base)
+
+                        if df_ratio is not None:
+                            # return the chart - put in excel
+                            fig = make_short_term_ratio_chart(df_ratio, study_ticker=ticker, study_desc=desc, base_ticker=base, base_desc=base_desc)
+
+                            if WRITE_XL:
+                                img_data = io.BytesIO()
+                                fig.savefig(img_data, format="png")
+                                img_data.seek(0)
+                                worksheet.write(0, 1, '<<< Gold to Silver Ratio.\n    Important for gold and silver investors.')
+                                worksheet.set_row(row=row, height=CELL_HT)
+                                worksheet.set_column(first_col=col, last_col=col, width=CELL_WIDTH)
+                                worksheet.insert_image(row, col, "", {'image_data': img_data})
+
+                                plt.close(fig)
+
+                            col += 1
+                            if col >= 3:
+                                col = 0
+                                row += 1
+
+            ticker_grps = [
+                ['SPY', 'QQQ', 'GLD', 'GDX', 'GDXJ'],
+                ['GLD', 'GDX', 'GDXJ', 'SLV', 'SIL', 'SILJ'],
+                ['SPY', 'QQQ', 'RSP', 'IWM', 'IYT', 'XLF'],
+                ['SPY', 'QQQ', 'EFA', 'EEM'],
+                ['SPY', 'QQQ', 'LQD', 'GOVT'],
+            ]
+
+            df = pd.read_csv(os.path.join(DATA_FOLDER, 'SPY.csv'))
+            df.Date = df.Date.apply(lambda x: datetime.datetime.strptime(x, '%Y-%m-%d').date())
+            df0 = df.loc[df.Date >= datetime.date(year=2020, month=3, day=23), ]
+            df1 = df.loc[df.Date >= datetime.date(year=2019, month=12, day=31), ]
+            periods = [20, df0.shape[0], df1.shape[0], 250]
+            del df
+
+            if WRITE_XL:
+                row = 0
+                col = 0
+                worksheet = workbook.add_worksheet(f'Other Charts')
+
+                # worksheet.write(0, 1, 'Gold to Silver Ratio (Important for Precious Metal Markets)')
+                df_ratio = build_ratio_data(study_ticker='GC=F', base_ticker='SI=F')
+
+                if df_ratio is not None:
+                    fig = make_short_term_ratio_chart(df_ratio, study_ticker='GC=F', study_desc=TKR_DICT['GC=F'],
+                                                      base_ticker='SI=F', base_desc=TKR_DICT['SI=F'],
+                                                      alt_title='Gold to Silver Ratio (1 yr)')
+
+                    if fig is not None:
                         img_data = io.BytesIO()
                         fig.savefig(img_data, format="png")
                         img_data.seek(0)
                         worksheet.set_row(row=row, height=CELL_HT)
                         worksheet.set_column(first_col=col, last_col=col, width=CELL_WIDTH)
-                        worksheet.insert_image(row, col, "", {'image_data': img_data})
+                        worksheet.insert_image(row, col, "", {'image_data': img_data, })
+                        # plt.show()
+                        plt.close(fig)
+                        row += 1
 
-                    plt.close(fig)
+                for tkr_grp in ticker_grps:
+                    col = 0
+                    has_fig = False
+                    for period in periods:
+                        fig = make_pct_gain_chart(tkr_list=tkr_grp, period_days=period)
 
-                    col += 1
-            if has_fig:
-                row += 1
+                        if fig:
+                            if WRITE_XL:
+                                has_fig = True
+                                img_data = io.BytesIO()
+                                fig.savefig(img_data, format="png")
+                                img_data.seek(0)
+                                worksheet.set_row(row=row, height=CELL_HT)
+                                worksheet.set_column(first_col=col, last_col=col, width=CELL_WIDTH)
+                                worksheet.insert_image(row, col, "", {'image_data': img_data})
 
-    if WRITE_XL and writer is not None:
-        try:
-            writer.save()
-            print('!!!Saved Excel file!!!')
-        except:
-            print('!!!Cannot save Excel file!!!')
-    else:
-        print(f'!!!Cannot save Excel file, not set to save, or writer problem, WRITE_XL: {WRITE_XL}!!!')
+                            plt.close(fig)
 
-    ref_portfolio(tkers=['SPY', 'FBND'], allocs=[0.6, 0.4])
-    ref_portfolio(tkers=['SPY', 'QQQ','FBND'], allocs=[0.4, 0.2, 0.4])
-    ref_portfolio(tkers=['FBND'], allocs=[1.0])
-    ref_portfolio(tkers=['SPY'], allocs=[1.0])
-    print(f'Done')  #, log file (if saved): {LOG_FILE_NAME}')
+                            col += 1
+                    if has_fig:
+                        row += 1
+
+        if WRITE_XL and writer is not None:
+            try:
+                writer.save()
+                print('!!!Saved Excel file!!!')
+            except:
+                print('!!!Cannot save Excel file!!!')
+        else:
+            print(f'!!!Cannot save Excel file, not set to save, or writer problem, WRITE_XL: {WRITE_XL}!!!')
+
+        # allocs must balance tickers and sum to 1.0
+        ref_portfolio(tkers=['SPY', 'FBND'], allocs=[0.6, 0.4])
+        ref_portfolio(tkers=['SPY', 'QQQ','FBND'], allocs=[0.4, 0.2, 0.4])
+        ref_portfolio(tkers=['FBND'], allocs=[1.0])
+        ref_portfolio(tkers=['SPY'], allocs=[1.0])
+        ref_portfolio(tkers=['SPY', 'LQD', 'GOVT'], allocs=[0.6, 0.2, 0.2])
+
+    # first dates:
+    print('SPY', pd.read_csv(os.path.join(DATA_FOLDER, 'SPY.csv')).Date.iloc[0])
+    print('RSP', pd.read_csv(os.path.join(DATA_FOLDER, 'RSP.csv')).Date.iloc[0])
+    print('JKE', pd.read_csv(os.path.join(DATA_FOLDER, 'JKE.csv')).Date.iloc[0])
+    print('JKF', pd.read_csv(os.path.join(DATA_FOLDER, 'JKF.csv')).Date.iloc[0])
+    print('IWM', pd.read_csv(os.path.join(DATA_FOLDER, 'IWM.csv')).Date.iloc[0])
+    print('EFA', pd.read_csv(os.path.join(DATA_FOLDER, 'EFA.csv')).Date.iloc[0])
+    print('GDX', pd.read_csv(os.path.join(DATA_FOLDER, 'EFA.csv')).Date.iloc[0])
+    #
+    # print('LQD', pd.read_csv(os.path.join(DATA_FOLDER, 'LQD.csv')).Date.iloc[0])
+    # print('IEF', pd.read_csv(os.path.join(DATA_FOLDER, 'IEF.csv')).Date.iloc[0])
+
+    # adaptive_portfolio()
+
+    print(f'Done')  # , log file (if saved): {LOG_FILE_NAME}')
