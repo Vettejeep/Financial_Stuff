@@ -4,20 +4,7 @@
 # https://github.com/Vettejeep/Financial_Stuff
 
 # TODO: new percent change charts not fully validated, but the code appears correct
-
-# play:
-# qqq, but rsi divergence
-# iyt maybe
-# pave
-# icln
-# pbw
-# smh
-# botz
-# robo
-# qqew
-# iyw
-# icvt
-# all gold and silver
+# TODO: CPER/GLD Ratio
 
 import io
 import os
@@ -35,9 +22,9 @@ pd.set_option('display.max_columns', 32)
 from pandas.plotting import register_matplotlib_converters
 register_matplotlib_converters()
 
-__VERSION__ = '2.1.0'
+__VERSION__ = '2.1.2'
 
-UPDATE_FILES = False  ### Set True to create the needed ticker files
+UPDATE_FILES = True  ### Set True to create the needed ticker files
 MAKE_PLOT = True
 SHOW_PLOTS = False
 WRITE_XL = True
@@ -306,6 +293,7 @@ TKR_DICT = {
     'IEF': 'US 7-10 Yr Treasurys',
     'GOVT': 'US Treasury ETF',
     'LQD': 'Corporate Bond ETF',
+    '%5EBUX': 'WSJ Dollar Index',
 
     'EFA': 'MSCI EAFE Ex-US',
     'IWM': 'Russel 2000',
@@ -323,10 +311,11 @@ TKR_DICT = {
 
     'PPLT': 'Platinum Metal',  # comment out these & below for a short test run
     'CPER': 'Copper Metal',
+    'DJP': 'Commodity Index',
     'EEM': 'Emerging Mkt',
     'IDEV': 'Dev Mkt Ex-US',
 
-    # 'EWJ': 'Japan',
+    'EWJ': 'Japan',
     # 'EWG': 'Germany',  # RSI problem for EWG? needs debug
     # 'EWU': 'UK',
 
@@ -348,6 +337,7 @@ TKR_DICT = {
     'QQEW': 'Nasdaq 100 EW',
     'XT': 'Exponential Tech & Bio',
     'IBB': 'Bio-Tech',
+    'IDNA': 'Genome Biotech',
     'IYW': 'US Tech',
     'ICVT': 'Convertible Bonds',
     'XLC': 'S&P Communication',
@@ -694,6 +684,40 @@ def chk_gap(t, df):
         print(f'Gap for {t}: {gap}, Low: {lo}, Hi: {hi}')
 
 
+def lt_performance(tkrs=('SPY', 'QQQ', 'JKF', 'JKE', 'GLD', 'GDX'),
+                   classes=('S&P500', 'Big Tech', 'Big Value', 'Big Growth', 'Gold'),
+                   terms=(1, 5, 10, 20, 30)):
+    result_df = pd.DataFrame(index=tkrs, columns=terms)
+    result_df['Investment Class'] = classes
+    year_now = datetime.date.today().year
+    msg = 'Long term returns for assets:\n'
+
+    for tkr in tkrs:
+        returns = []
+        base_file = [x for x in os.listdir(DATA_FOLDER) if tkr in x][0]
+        df = pd.read_csv(os.path.join(DATA_FOLDER, base_file))
+        df.Date = df.Date.apply(lambda x: datetime.datetime.strptime(x, '%Y-%m-%d').date())
+        df['year'] = df.Date.apply(lambda x: datetime.datetime.strptime(x, '%Y').date())
+
+        # assume sorted
+        for year in range(year_now-max(terms), year_now):
+            try:
+                prev_year = year - 1
+                price0 = df.loc[df['year'] == prev_year, ].Adj_Close.iloc[-1]
+                price1 = df.loc[df['year'] == year, ].Adj_Close.iloc[-1]
+
+                if df.loc[df['year'] == prev_year, ].shape[0] > 230:
+                    ret = price1 / price0
+                    returns.append[ret]
+            except:
+                pass
+
+        for term in terms:
+            if len(returns) >= term:
+                r = np.prod()
+
+
+
 def ref_portfolio(tkers, allocs):
     df0 = None
     df1 = None
@@ -993,7 +1017,7 @@ def make_long_term_ratio_chart(df_out, study_ticker, study_desc, base_ticker, ba
     ax0.set_xlabel('Date', fontsize=8)
     ax0.set_title(f'{study_ticker} ({study_desc}) vs {base_ticker} ({base_desc}) Moving Avg Price Ratios', fontsize=8)
     ax0.legend(loc='upper left', fontsize=6)
-    ax0.margins(0.02)
+    ax0.margins(0.01)
     ax0.set_yscale(value='log')
     ax0.set_yticks(ticks=[])
     ax0.tick_params(axis='both', labelsize=6)
@@ -1004,7 +1028,7 @@ def make_long_term_ratio_chart(df_out, study_ticker, study_desc, base_ticker, ba
     ax1.tick_params(axis='y', labelsize=6)
     ax1.set_xticks(ticks=[])
     ax1.set_title(f'RSI ({RSI_LONG} trading days)', fontsize=8)
-    ax1.margins(0.02)
+    ax1.margins(0.01)
 
     fig.tight_layout()
 
@@ -1029,8 +1053,7 @@ def make_short_term_ratio_chart(df_out, study_ticker, study_desc, base_ticker, b
     else:
         ax0.set_title(alt_title, fontsize=8)
     ax0.legend(loc='upper left', fontsize=6)
-    ax0.margins(0.02)
-    ax0.margins(0.02)
+    ax0.margins(0.01)
     ax0.set_yscale(value='log')
     ax0.set_yticks(ticks=[])
     ax0.tick_params(axis='both', labelsize=6)
@@ -1041,7 +1064,7 @@ def make_short_term_ratio_chart(df_out, study_ticker, study_desc, base_ticker, b
     ax1.tick_params(axis='y', labelsize=6)
     ax1.set_xticks(ticks=[])
     ax1.set_title(f'RSI ({RSI_SHORT} trading days)', fontsize=8)
-    ax1.margins(0.02)
+    ax1.margins(0.01)
 
     fig.tight_layout()
 
@@ -1063,7 +1086,7 @@ def make_basic_ratio_chart(df_out, study_ticker, study_desc, base_ticker, base_d
     plt.xlabel('Date', fontsize=8)
     plt.legend(loc='upper left', fontsize=6)
     plt.yscale(value='log')
-    plt.margins(x=0.02, y=0.02)
+    plt.margins(x=0.01, y=0.01)
     fig.tight_layout()
 
     if SHOW_PLOTS:
@@ -1286,6 +1309,10 @@ if __name__ == "__main__":
         ref_portfolio(tkers=['FBND'], allocs=[1.0])
         ref_portfolio(tkers=['SPY'], allocs=[1.0])
         ref_portfolio(tkers=['SPY', 'LQD', 'GOVT'], allocs=[0.6, 0.2, 0.2])
+        ref_portfolio(tkers=['GLD'], allocs=[1.0])
+        ref_portfolio(tkers=['SLV'], allocs=[1.0])
+        ref_portfolio(tkers=['GDX'], allocs=[1.0])
+        ref_portfolio(tkers=['SIL'], allocs=[1.0])
 
     # first dates:
     print('SPY', pd.read_csv(os.path.join(DATA_FOLDER, 'SPY.csv')).Date.iloc[0])
